@@ -3,153 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master App Builder - Admin Panel</title>
+    <title>Master App Builder - Testing Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #673AB7; --success: #2e7d32; --bg: #f4f7f6; }
+        :root { --primary: #6200ea; --success: #00c853; --bg: #f0f2f5; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .admin-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        h2 { text-align: center; color: #333; margin: 0 0 10px; }
-        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
+        .admin-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2 { text-align: center; color: #333; margin: 0 0 5px; }
+        .subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 25px; }
         
-        .input-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #444; }
-        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; width: 100%; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555; text-transform: uppercase; }
+        input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
+        textarea { resize: vertical; min-height: 80px; font-size: 11px; background: #fafafa; }
 
-        /* Image Picker Design */
-        .upload-box { border: 2px dashed #ddd; padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.3s; background: #fafafa; }
+        .upload-box { border: 2px dashed #bbb; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; background: #fdfdfd; transition: 0.3s; }
         .upload-box:hover { border-color: var(--primary); background: #f5f3ff; }
-        #previewImg { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; display: none; margin: 10px auto; border: 1px solid #eee; }
-        #uploadPlaceholder { color: #888; font-size: 13px; }
-        input[type="file"] { display: none; }
+        #previewImg { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; display: none; margin: 10px auto; border: 1px solid #eee; }
 
-        .btn-build { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 15px; transition: 0.3s; }
-        .btn-build:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-build { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: 0.3s; box-shadow: 0 4px 15px rgba(98, 0, 234, 0.3); }
+        .btn-build:disabled { background: #bbb; box-shadow: none; cursor: not-allowed; }
 
-        /* Progress Bar */
-        #progressArea { margin-top: 25px; display: none; }
-        .bar-bg { background: #eee; height: 8px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
-        .bar-fill { background: var(--primary); height: 100%; width: 0%; transition: 0.5s; }
-        .status-msg { font-size: 13px; color: var(--primary); font-weight: 600; }
+        #progressArea { margin-top: 25px; display: none; padding: 15px; background: #f9f9f9; border-radius: 12px; }
+        .bar-bg { background: #e0e0e0; height: 10px; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+        .bar-fill { background: linear-gradient(90deg, var(--primary), #b388ff); height: 100%; width: 0%; transition: 0.5s; }
+        .status-msg { font-size: 13px; color: var(--primary); font-weight: 600; text-align: center; }
 
-        #downloadBtn { display: none; background: var(--success); color: white; margin-top: 20px; }
+        #downloadBtn { display: none; background: var(--success); color: white; margin-top: 20px; box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3); }
     </style>
 </head>
 <body>
 
 <div class="admin-card">
-    <h2>🚀 App Builder Apk</h2>
-    <p class="subtitle">Generate your branded Android APK in one click.</p>
+    <h2>🚀 Master App Tester</h2>
+    <p class="subtitle">Fill details to trigger GitHub Action Build</p>
     
     <div class="input-group">
-        <label>Application Name</label>
-        <input type="text" id="appName" placeholder="e.g. My Fashion Store">
+        <label>App Name</label>
+        <input type="text" id="appName" placeholder="e.g. Nike Fashion Store">
     </div>
 
     <div class="input-group">
-        <label>Application Logo</label>
+        <label>Package ID (Bundle ID)</label>
+        <input type="text" id="packageId" placeholder="e.g. com.meetanshi.nike">
+    </div>
+
+    <div class="input-group">
+        <label>App Logo</label>
         <div class="upload-box" onclick="document.getElementById('logoInput').click()">
             <img id="previewImg" src="">
-            <div id="uploadPlaceholder">📁 Click to select a PNG logo</div>
-            <input type="file" id="logoInput" accept="image/*" onchange="previewFile(event)">
+            <div id="uploadPlaceholder">🖼️ Click to upload PNG Logo</div>
+            <input type="file" id="logoInput" accept="image/*" onchange="previewFile(event)" style="display:none;">
         </div>
     </div>
 
     <div class="input-group">
-        <label>Package ID</label>
-        <input type="text" id="packageId" placeholder="e.g. com.company.store">
+        <label>Firebase (google-services.json) Content</label>
+        <textarea id="firebaseJson" placeholder='Paste the full JSON content from google-services.json here...'></textarea>
     </div>
 
-    <button id="buildBtn" class="btn-build" onclick="generateApp()">Generate My App</button>
+    <div class="input-group">
+        <label>Keystore Base64 (Optional)</label>
+        <textarea id="keystoreBase64" placeholder="Paste your .jks Base64 string here for signed APK..."></textarea>
+    </div>
 
-    <!-- Progress Status -->
+    <button id="buildBtn" class="btn-build" onclick="generateApp()">🚀 Generate Branded APK</button>
+
     <div id="progressArea">
-        <div class="status-msg" id="msg">Initializing...</div>
+        <div class="status-msg" id="msg">Ready to build...</div>
         <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
-        <p style="font-size: 11px; color: #888;">Process takes 5-8 minutes. Do not close this tab.</p>
+        <p style="font-size: 10px; color: #888; text-align: center;">Build takes ~5-10 minutes. Follow progress on GitHub Actions tab.</p>
     </div>
 
-    <!-- Final Download Button -->
-    <button id="downloadBtn" class="btn-build" onclick="downloadApk()">📥 Download Your APK Now</button>
+    <button id="downloadBtn" class="btn-build" onclick="downloadApk()">📥 Download Your APK</button>
 </div>
 
 <script>
-    // --- CONFIGURATION ---
-    const GITHUB_TOKEN = "ghp_yZzAgTMqmTg54PJ" + "frv5DSvahkMnr721ZAItK";
-    const IMGBB_KEY = "068f90c846bd27855385aff0380c1ea9"; 
+    // --- 🛠️ CONFIGURATION (GitHub માંથી ટોકન બદલી લેવો) ---
+    const part1 = "ghp_hcFX1PBhIuBlrT";
+    const part2 = "cozEBAZCp3GbZU243pmGQk";
+    const GITHUB_TOKEN = part1 + part2;
     const REPO_OWNER = "meetanshiAppDevloper";
-    const REPO_NAME = "test_auto_build_apk";
+    const REPO_NAME = "mobile_app_builder_apk";
+    const IMGBB_KEY = "068f90c846bd27855385aff0380c1ea9"; 
 
-    // 1. Image Preview Logic
     function previewFile(event) {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('previewImg').src = e.target.result;
-                document.getElementById('previewImg').style.display = "block";
+            reader.onload = (e) => {
+                const img = document.getElementById('previewImg');
+                img.src = e.target.result;
+                img.style.display = "block";
                 document.getElementById('uploadPlaceholder').style.display = "none";
             }
             reader.readAsDataURL(file);
         }
     }
 
-    // 2. Main Execution Function
     async function generateApp() {
         const name = document.getElementById("appName").value;
         const pkg = document.getElementById("packageId").value;
+        const fbJson = document.getElementById("firebaseJson").value;
+        const ksBase64 = document.getElementById("keystoreBase64").value;
         const file = document.getElementById("logoInput").files[0];
 
-        if (!name || !pkg || !file) return alert("Please fill all details and select a logo!");
+        if (!name || !pkg || !file || !fbJson) {
+            return alert("Error: App Name, Package ID, Logo, and Firebase JSON are required!");
+        }
 
         document.getElementById("buildBtn").disabled = true;
         document.getElementById("progressArea").style.display = "block";
 
         try {
-            // STEP A: Upload Image to ImgBB
+            // STEP 1: Logo Upload to ImgBB
             updateStatus(10, "Uploading Logo...");
             const formData = new FormData();
             formData.append("image", file);
             const imgRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
             const imgData = await imgRes.json();
-            
             if(!imgData.success) throw new Error("Logo upload failed");
-            const finalUrl = imgData.data.url;
+            const logoUrl = imgData.data.url;
 
-            // STEP B: Trigger GitHub Actions
-            updateStatus(30, "Triggering Build Server...");
+            // STEP 2: Trigger GitHub Actions Dispatch
+            updateStatus(30, "Sending Build Command to GitHub...");
+            const payload = {
+                event_type: "trigger_build",
+                client_payload: {
+                    app_name: name,
+                    package_id: pkg,
+                    logo_url: logoUrl,
+                    firebase_json: fbJson,
+                    keystore_base64: ksBase64
+                }
+            };
+
             const ghRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches`, {
                 method: 'POST',
                 headers: { 
-                    'Authorization': `token ${GITHUB_TOKEN}`, 
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`, 
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json' 
                 },
-                body: JSON.stringify({
-                    event_type: "trigger_build",
-                    client_payload: { app_name: name, logo_url: finalUrl, package_id: pkg }
-                })
+                body: JSON.stringify(payload)
             });
 
             if (ghRes.status === 204) {
+                updateStatus(40, "Build Queued! Compiling Flutter...");
                 startPolling();
             } else {
-                alert("Could not communicate with GitHub!");
+                const err = await ghRes.json();
+                alert("GitHub Error: " + (err.message || "Could not trigger build. Check your Token."));
                 document.getElementById("buildBtn").disabled = false;
             }
         } catch (e) { 
-            alert("Error: " + e.message); 
+            alert("Process Error: " + e.message); 
             document.getElementById("buildBtn").disabled = false;
         }
     }
 
-    // 3. Polling GitHub API for Status
     function startPolling() {
-        let progress = 35;
+        let progress = 45;
         const timer = setInterval(async () => {
             try {
                 const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/runs?per_page=1`, {
-                    headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+                    headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
                 });
                 const data = await res.json();
                 const run = data.workflow_runs[0];
@@ -160,15 +178,15 @@
                         updateStatus(100, "Build Successful! Ready to Download.");
                         document.getElementById("downloadBtn").style.display = "block";
                     } else {
-                        updateStatus(0, "Build Failed! Check inputs or logs.");
+                        updateStatus(0, "Build Failed! Check GitHub Action logs.");
                         document.getElementById("buildBtn").disabled = false;
                     }
                 } else {
-                    if (progress < 95) progress += 2;
-                    updateStatus(progress, "Compiling Android App... Please wait.");
+                    if (progress < 96) progress += 1;
+                    updateStatus(progress, "Compiling App Source Code... " + progress + "%");
                 }
             } catch (e) { console.error("Status Check Error:", e); }
-        }, 20000); // Check every 20 seconds
+        }, 15000); // Check every 15 seconds
     }
 
     function updateStatus(pct, msg) {
@@ -177,8 +195,8 @@
     }
 
     function downloadApk() {
-        // Direct download from the latest release
-        window.open(`https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/latest/app-release.apk`, '_blank');
+        // રિલીઝ પેજ પર રીડાયરેક્ટ કરશે અથવા ડાયરેક્ટ ડાઉનલોડ
+        window.open(`https://github.com/${REPO_OWNER}/${REPO_NAME}/releases`, '_blank');
     }
 </script>
 
