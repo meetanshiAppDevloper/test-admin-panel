@@ -37,6 +37,11 @@
 <div class="admin-card">
     <h2>🚀 Master App Tester</h2>
     <p class="subtitle">Fill details to trigger GitHub Action Build</p>
+
+<div class="input-group">
+    <label>Shop Domain (Shopify URL)</label>
+    <input type="text" id="shopName" placeholder="e.g. your-store.myshopify.com">
+</div>
     
     <div class="input-group">
         <label>App Name</label>
@@ -106,6 +111,7 @@
         const name = document.getElementById("appName").value;
         const pkg = document.getElementById("packageId").value;
         const fbJson = document.getElementById("firebaseJson").value;
+        const shop = document.getElementById("shopName").value; 
         const ksBase64 = document.getElementById("keystoreBase64").value;
         const file = document.getElementById("logoInput").files[0];
 
@@ -133,6 +139,7 @@
                 client_payload: {
                     app_name: name,
                     package_id: pkg,
+                    shop_name: shop,
                     logo_url: logoUrl,
                     firebase_json: fbJson,
                     keystore_base64: ksBase64
