@@ -107,68 +107,78 @@
         }
     }
 
-    async function generateApp() {
-        const name = document.getElementById("appName").value;
-        const pkg = document.getElementById("packageId").value;
-        const fbJson = document.getElementById("firebaseJson").value;
-        const shop = document.getElementById("shopName").value; 
-        const ksBase64 = document.getElementById("keystoreBase64").value;
-        const file = document.getElementById("logoInput").files[0];
+   async function generateApp() {
+    // .trim() વાપરવાથી આજુબાજુની ખાલી જગ્યા નીકળી જશે
+    const name = document.getElementById("appName").value.trim();
+    const pkg = document.getElementById("packageId").value.trim();
+    const fbJson = document.getElementById("firebaseJson").value.trim();
+    const shop = document.getElementById("shopName").value.trim(); 
+    const ksBase64 = document.getElementById("keystoreBase64").value.trim();
+    const file = document.getElementById("logoInput").files[0];
 
-        if (!name || !pkg || !file || !fbJson) {
-            return alert("Error: App Name, Package ID, Logo, and Firebase JSON are required!");
-        }
+    // કયું ખાનું ખાલી છે તે જોવા માટે ડેબગિંગ (Console માં દેખાશે)
+    console.log("App Name:", name);
+    console.log("Package ID:", pkg);
+    console.log("Firebase JSON Length:", fbJson.length);
+    console.log("Logo File:", file);
+    console.log("Shop Domain:", shop);
 
-        document.getElementById("buildBtn").disabled = true;
-        document.getElementById("progressArea").style.display = "block";
+    // અહીં આપણે 'shop' ને પણ ચેક કરીશું કારણ કે તે જરૂરી છે
+    if (!name || !pkg || !file || !fbJson || !shop) {
+        return alert("Error: Shop Domain, App Name, Package ID, Logo, and Firebase JSON are required!");
+    }
 
-        try {
-            // STEP 1: Logo Upload to ImgBB
-            updateStatus(10, "Uploading Logo...");
-            const formData = new FormData();
-            formData.append("image", file);
-            const imgRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
-            const imgData = await imgRes.json();
-            if(!imgData.success) throw new Error("Logo upload failed");
-            const logoUrl = imgData.data.url;
+    document.getElementById("buildBtn").disabled = true;
+    document.getElementById("progressArea").style.display = "block";
 
-            // STEP 2: Trigger GitHub Actions Dispatch
-            updateStatus(30, "Sending Build Command to GitHub...");
-            const payload = {
-                event_type: "trigger_build",
-                client_payload: {
-                    app_name: name,
-                    package_id: pkg,
-                    shop_name: shop,
-                    logo_url: logoUrl,
-                    firebase_json: fbJson,
-                    keystore_base64: ksBase64
-                }
-            };
+    try {
+        // STEP 1: Logo Upload to ImgBB
+        updateStatus(10, "Uploading Logo...");
+        const formData = new FormData();
+        formData.append("image", file);
+        const imgRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
+        const imgData = await imgRes.json();
+        
+        if(!imgData.success) throw new Error("Logo upload failed: " + imgData.error.message);
+        const logoUrl = imgData.data.url;
 
-            const ghRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches`, {
-                method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${GITHUB_TOKEN}`, 
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (ghRes.status === 204) {
-                updateStatus(40, "Build Queued! Compiling Flutter...");
-                startPolling();
-            } else {
-                const err = await ghRes.json();
-                alert("GitHub Error: " + (err.message || "Could not trigger build. Check your Token."));
-                document.getElementById("buildBtn").disabled = false;
+        // STEP 2: Trigger GitHub Actions Dispatch
+        updateStatus(30, "Sending Build Command to GitHub...");
+        const payload = {
+            event_type: "trigger_build",
+            client_payload: {
+                app_name: name,
+                package_id: pkg,
+                shop_name: shop,
+                logo_url: logoUrl,
+                firebase_json: fbJson,
+                keystore_base64: ksBase64
             }
-        } catch (e) { 
-            alert("Process Error: " + e.message); 
+        };
+
+        const ghRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${GITHUB_TOKEN}`, 
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (ghRes.status === 204) {
+            updateStatus(40, "Build Queued! Compiling Flutter...");
+            startPolling();
+        } else {
+            const err = await ghRes.json();
+            alert("GitHub Error: " + (err.message || "Could not trigger build."));
             document.getElementById("buildBtn").disabled = false;
         }
+    } catch (e) { 
+        alert("Process Error: " + e.message); 
+        document.getElementById("buildBtn").disabled = false;
     }
+}
 
     async function startPolling() {
         let progress = 45;
