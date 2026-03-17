@@ -86,6 +86,7 @@
     const REPO_OWNER = "meetanshiAppDevloper";
     const REPO_NAME = "Master-shopify-app-builder";
     const IMGBB_KEY = "068f90c846bd27855385aff0380c1ea9"; 
+     let directDownloadUrl = ""; 
 
     function previewFile(event) {
         const file = event.target.files[0];
@@ -162,7 +163,7 @@
         }
     }
 
-    function startPolling() {
+    async function startPolling() {
         let progress = 45;
         const timer = setInterval(async () => {
             try {
@@ -175,8 +176,8 @@
                 if (run.status === "completed") {
                     clearInterval(timer);
                     if (run.conclusion === "success") {
-                        updateStatus(100, "Build Successful! Ready to Download.");
-                        document.getElementById("downloadBtn").style.display = "block";
+                        updateStatus(100, "Build Successful! Fetching Download Link...");
+                        await fetchLatestApk(); // સફળ થયા પછી ડાયરેક્ટ લિંક મેળવશે
                     } else {
                         updateStatus(0, "Build Failed! Check GitHub Action logs.");
                         document.getElementById("buildBtn").disabled = false;
@@ -186,17 +187,52 @@
                     updateStatus(progress, "Compiling App Source Code... " + progress + "%");
                 }
             } catch (e) { console.error("Status Check Error:", e); }
-        }, 15000); // Check every 15 seconds
+        }, 15000);
     }
 
-    function updateStatus(pct, msg) {
-        document.getElementById("bar").style.width = pct + "%";
-        document.getElementById("msg").innerText = msg;
+    // 📥 લેટેસ્ટ APK ની ડાયરેક્ટ લિંક શોધવા માટેનું નવું ફંક્શન
+    async function fetchLatestApk() {
+        try {
+            const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`, {
+                headers: { 'Authorization': `Bearer ${GITHUB_TOKEN}` }
+            });
+            const data = await res.json();
+            
+            // એસેટ્સ (assets) માં .apk ફાઈલ શોધશે
+            const apkAsset = data.assets.find(asset => asset.name.endsWith(".apk"));
+            
+            if (apkAsset) {
+                directDownloadUrl = apkAsset.browser_download_url;
+                updateStatus(100, "Ready to Download!");
+                document.getElementById("downloadBtn").style.display = "block";
+            } else {
+                alert("APK file not found in the latest release. Redirecting to releases page.");
+                directDownloadUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases`;
+                document.getElementById("downloadBtn").style.display = "block";
+            }
+        } catch (e) {
+            console.error("Fetch Release Error:", e);
+            alert("Error fetching download link. Please check GitHub Releases manually.");
+        }
     }
 
     function downloadApk() {
-        // રિલીઝ પેજ પર રીડાયરેક્ટ કરશે અથવા ડાયરેક્ટ ડાઉનલોડ
-        window.open(`https://github.com/${REPO_OWNER}/${REPO_NAME}/releases`, '_blank');
+        if (directDownloadUrl) {
+            // અદ્રશ્ય લિંક બનાવીને ડાયરેક્ટ ડાઉનલોડ ટ્રિગર કરશે
+            const link = document.createElement('a');
+            link.href = directDownloadUrl;
+            link.download = ''; 
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            alert("Download link is not ready yet.");
+        }
+    }
+    
+    function updateStatus(pct, msg) {
+        document.getElementById("bar").style.width = pct + "%";
+        document.getElementById("msg").innerText = msg;
     }
 </script>
 
